@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IceAgeBOT — AI Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--ink:#10243b;--muted:#71839a;--line:#e3ebf3;--blue:#2378e8;--ice:#eaf5ff;--canvas:#f5f8fc}
+*{box-sizing:border-box}body{margin:0;background:var(--canvas);color:var(--ink);font:14px/1.5 Inter,system-ui,Segoe UI,sans-serif}
+button,input{font:inherit}button{cursor:pointer}.shell{min-height:100vh;display:grid;grid-template-columns:235px 1fr}
+aside{background:#fff;border-right:1px solid var(--line);padding:25px 16px;display:flex;flex-direction:column;gap:27px}
+.brand{display:flex;align-items:center;gap:10px;padding:0 8px}.mark{width:35px;height:35px;background:linear-gradient(145deg,#5ab5ff,#1767d6);clip-path:polygon(0 0,82% 0,100% 18%,100% 100%,18% 100%,0 82%);display:grid;place-items:center;color:white;font-weight:900;font-size:17px}.brand b{font-size:17px}.brand span{color:var(--blue)}
+.navlabel{font-size:10px;font-weight:800;color:#9aa9b9;letter-spacing:1.5px;padding:0 10px;margin-bottom:8px}.nav{display:grid;gap:4px}.nav a{height:40px;padding:0 12px;display:flex;align-items:center;gap:12px;color:#62758a;text-decoration:none;font-weight:600;border-left:2px solid transparent}.nav a.active{background:#edf6ff;color:#176ed8;border-left-color:#2378e8}
+.side-note{margin-top:auto;border-top:1px solid var(--line);padding:16px 8px 0;color:var(--muted);font-size:11px}
+main{min-width:0}header{height:68px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 34px}.crumb{color:var(--muted);font-size:12px}.crumb b{color:var(--ink)}.userarea{display:flex;align-items:center;gap:10px}.avatar{width:32px;height:32px;background:#dceeff;color:#176ed8;display:grid;place-items:center;font-weight:800}
+.content{max-width:1350px;margin:auto;padding:32px 34px 50px}.welcome{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:22px}h1{font-size:26px;letter-spacing:-.8px;margin:0 0 4px}.sub{margin:0;color:var(--muted)}
+.grid{display:grid;grid-template-columns:1.5fr 1fr;gap:17px}.panel{background:#fff;border:1px solid var(--line);box-shadow:0 4px 18px #193a5b06}
+.hero{min-height:210px;padding:23px 25px;position:relative;overflow:hidden;background:linear-gradient(110deg,#fff 0%,#fff 57%,#eff7ff 100%)}.eyebrow{font-size:10px;font-weight:800;letter-spacing:1.5px;color:#3985d9}.hero h2{font-size:22px;letter-spacing:-.6px;margin:8px 0 5px;max-width:340px}.hero p{color:var(--muted);max-width:340px;margin:0 0 14px}.outline{border:1px solid #cfe1f4;background:#fff;color:#176ed8;padding:9px 12px;font-weight:700;font-size:12px}
+.botstage{position:absolute;right:35px;top:22px;width:170px;height:165px;display:grid;place-items:center;pointer-events:none}.shadow{position:absolute;bottom:13px;width:90px;height:12px;background:#9bc9f4;filter:blur(11px);border-radius:50%}.bot{position:relative;width:105px;height:105px;background:linear-gradient(145deg,#fff,#d9edff);border:2px solid #8dc5fa;clip-path:polygon(18% 0,82% 0,100% 18%,100% 82%,82% 100%,18% 100%,0 82%,0 18%);box-shadow:0 15px 30px #3688d833;transform:translate(var(--mx,0),var(--my,0));transition:transform .14s}.bot:before{content:"";position:absolute;inset:13px 12px 19px;background:linear-gradient(145deg,#1c4f83,#102b4b);clip-path:polygon(14% 0,86% 0,100% 16%,100% 84%,84% 100%,16% 100%,0 84%,0 16%)}.eyes{position:absolute;z-index:2;top:42px;left:29px;display:flex;gap:17px}.eyes i{width:9px;height:12px;background:#7ed0ff;box-shadow:0 0 10px #69c7ff;border-radius:2px}.mouth{position:absolute;z-index:2;top:65px;left:46px;width:13px;height:3px;background:#7ed0ff}.antenna{position:absolute;z-index:3;top:-17px;left:49px;width:5px;height:20px;background:#6daee9}.antenna:after{content:"";position:absolute;top:-5px;left:-4px;width:12px;height:12px;background:#2382e8;border:2px solid white;border-radius:50%}
+.stats{padding:19px}.panelhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}.panelhead h3{font-size:13px;margin:0}.plan{font-size:10px;background:#edf6ff;color:#176ed8;padding:5px 8px;font-weight:800}.statgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat{padding:12px;background:#f8fbff;border-left:2px solid #8cc5fb}.stat small{color:var(--muted);font-size:10px;font-weight:700}.stat strong{display:block;font-size:21px;margin:3px 0}.stat em{font-style:normal;color:#159b78;font-size:10px}
+.chatpanel{margin-top:17px;padding:21px}.chathead{display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px solid var(--line);padding-bottom:15px}.assistant{display:flex;align-items:center;gap:11px}.botmini{width:39px;height:39px;background:#e8f3ff;color:#2378e8;display:grid;place-items:center;font-size:19px}.assistant b{display:block;font-size:14px}.online{font-size:10px;color:#159b78}.credits{font-size:11px;color:#42617e;background:#f1f7ff;padding:7px 10px;border:1px solid #dcecff}
+.chatbody{height:330px;overflow:auto;padding:18px 3px;display:flex;flex-direction:column;gap:13px}.msg{max-width:78%;padding:11px 14px;font-size:13px;white-space:pre-wrap}.msg.ai{align-self:flex-start;background:#f2f7fc;border-left:2px solid #8cc5fb}.msg.user{align-self:flex-end;background:#eaf4ff;border-right:2px solid #2378e8}.msg small{display:block;color:#71839a;font-size:9px;font-weight:800;letter-spacing:1px;margin-bottom:4px}.typing{color:#71839a;font-size:12px;padding:8px}.composer{display:flex;gap:9px;border-top:1px solid var(--line);padding-top:14px}.composer input{flex:1;min-width:0;border:1px solid var(--line);padding:12px 13px;outline:none}.composer input:focus{border-color:#7db7f4}.send{border:0;background:#176ed8;color:white;padding:0 18px;font-weight:800;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px))}.hint{font-size:10px;color:#91a0af;margin-top:8px}
+.authwrap{min-height:calc(100vh - 68px);display:grid;place-items:center;padding:25px}.authbox{width:min(420px,100%);background:white;border:1px solid var(--line);padding:28px;box-shadow:0 10px 35px #193a5b0b}.authbox h2{margin:0 0 5px;font-size:22px}.authbox p{color:var(--muted);margin:0 0 18px}.authbox label{display:block;font-size:11px;font-weight:800;color:#61758b;margin:12px 0 5px}.authbox input{width:100%;padding:11px;border:1px solid var(--line)}.authbuttons{display:flex;gap:9px;margin-top:18px}.primary{border:0;background:#176ed8;color:white;padding:11px 16px;font-weight:800}.secondary{border:1px solid var(--line);background:white;color:#176ed8;padding:10px 14px;font-weight:700}.status{font-size:12px;color:#b54747;min-height:18px;margin-top:10px}.hidden{display:none!important}
+@media(max-width:850px){.shell{grid-template-columns:68px 1fr}aside{padding:22px 9px}.brand{justify-content:center;padding:0}.brand b,.navlabel,.nav a span:last-child{display:none}.nav a{justify-content:center;padding:0}.side-note{font-size:0}.grid{grid-template-columns:1fr}.content{padding:24px 18px}.botstage{right:18px}}
+@media(max-width:560px){.shell{grid-template-columns:1fr}aside{display:none}header{height:58px;padding:0 15px}.content{padding:20px 13px}.welcome{flex-direction:column}h1{font-size:23px}.hero{min-height:300px}.botstage{top:125px;right:calc(50% - 85px);transform:scale(.82)}.hero p{max-width:100%}.chatbody{height:300px}.msg{max-width:92%}.credits{font-size:9px}}
+</style>
+</head>
+<body>
+<div class="shell">
+<aside>
+ <div class="brand"><div class="mark">I</div><b>IceAge<span>BOT</span></b></div>
+ <div><div class="navlabel">WORKSPACE</div><nav class="nav">
+  <a class="active" href="#"><span>▦</span><span>Overview</span></a>
+  <a href="#assistant"><span>✧</span><span>IceAge AI</span></a>
+  <a href="#"><span>⌁</span><span>Analytics</span></a>
+  <a href="#"><span>⚙</span><span>Bot settings</span></a>
+  <a href="#"><span>♙</span><span>Members</span></a>
+ </nav></div>
+ <div class="side-note">IceAgeBOT dashboard<br>White &amp; blue edition</div>
+</aside>
+<main>
+<header><div class="crumb">Workspace <span style="padding:0 8px;color:#b7c4d1">/</span><b>Overview</b></div><div class="userarea"><span id="userEmail" style="font-size:11px;color:#71839a"></span><div class="avatar" id="avatar">I</div><button id="signout" class="secondary hidden" style="padding:6px 9px;font-size:11px">Sign out</button></div></header>
+<section id="dashboard" class="content hidden">
+ <div class="welcome"><div><h1>Welcome to IceAgeBOT.</h1><p class="sub">Your server tools and AI assistant, in one place.</p></div></div>
+ <div class="grid">
+  <section class="panel hero"><div class="eyebrow">YOUR SERVER ASSISTANT</div><h2>Meet IceAge AI.</h2><p>Ask questions, get setup instructions, and troubleshoot your IceAgeBOT dashboard.</p><button class="outline" onclick="document.getElementById('assistant').scrollIntoView({behavior:'smooth'})">Chat with IceAge AI ↗</button>
+   <div class="botstage" id="botstage"><div class="shadow"></div><div class="bot"><div class="antenna"></div><div class="eyes"><i></i><i></i></div><div class="mouth"></div></div></div>
+  </section>
+  <section class="panel stats"><div class="panelhead"><h3>AI credit balance</h3><span class="plan" id="planBadge">FREE PLAN</span></div><div class="statgrid">
+   <div class="stat"><small>CREDITS LEFT</small><strong id="credits">—</strong><em id="creditNote">Sign in to view</em></div>
+   <div class="stat"><small>MONTHLY ALLOWANCE</small><strong id="allowance">—</strong><em>Resets monthly</em></div>
+  </div><p style="font-size:11px;color:#71839a;margin:13px 0 0">One credit is used for each successful AI reply.</p></section>
+ </div>
+ <section class="panel chatpanel" id="assistant">
+  <div class="chathead"><div class="assistant"><div class="botmini">✧</div><div><b>IceAge AI</b><div class="online">● Ready to help</div></div></div><div class="credits" id="creditPill">Credits: —</div></div>
+  <div class="chatbody" id="chatbody"><div class="msg ai"><small>ICEAGE AI</small>Hey! I'm IceAge AI. I can explain how to use IceAgeBOT, walk you through setup, and help troubleshoot problems. I can give instructions, but I can't change your Discord server or dashboard settings.</div></div>
+  <form class="composer" id="chatForm"><input id="message" maxlength="1200" placeholder="Ask IceAge AI for help..." autocomplete="off"><button class="send" id="sendBtn" type="submit">Send ↑</button></form>
+  <div class="hint">AI replies use 1 credit each. Don't share passwords, API keys, or private information in chat.</div>
+ </section>
+</section>
+<section id="auth" class="authwrap">
+ <div class="authbox"><div class="eyebrow">ICEAGEBOT ACCOUNT</div><h2>Sign in to continue.</h2><p>Create an account or sign in to use IceAge AI and save your credit balance.</p>
+  <label for="email">EMAIL</label><input id="email" type="email" autocomplete="email" placeholder="you@example.com">
+  <label for="password">PASSWORD</label><input id="password" type="password" autocomplete="current-password" placeholder="At least 8 characters">
+  <div class="authbuttons"><button id="login" class="primary">Sign in</button><button id="signup" class="secondary">Create account</button></div>
+  <div id="authStatus" class="status"></div>
+ </div>
+</section>
+</main>
+</div>
+<script>
+let supabaseClient, currentSession, profile;
+const $ = id => document.getElementById(id);
+function setAuthStatus(text, good=false){$('authStatus').style.color=good?'#159b78':'#b54747';$('authStatus').textContent=text}
+function addMessage(role,text){const el=document.createElement('div');el.className='msg '+role;const label=document.createElement('small');label.textContent=role==='user'?'YOU':'ICEAGE AI';el.append(label,document.createTextNode(text));$('chatbody').appendChild(el);$('chatbody').scrollTop=$('chatbody').scrollHeight}
+function renderProfile(p){profile=p;const allowances={free:25,premium:500,premium_plus:1500};const amount=allowances[p.plan]||25;$('credits').textContent=p.credits_remaining;$('allowance').textContent=amount.toLocaleString();$('planBadge').textContent=(p.plan||'free').replace('_',' ').toUpperCase()+' PLAN';$('creditNote').textContent='Available this month';$('creditPill').textContent=`Credits: ${p.credits_remaining} / ${amount}`;$('userEmail').textContent=currentSession.user.email;$('avatar').textContent=(currentSession.user.email||'I')[0].toUpperCase()}
+async function showSignedIn(session){currentSession=session;$('auth').classList.add('hidden');$('dashboard').classList.remove('hidden');$('signout').classList.remove('hidden');const {data,error}=await supabaseClient.from('profiles').select('plan,credits_remaining,credits_reset_at').eq('id',session.user.id).single();if(error){addMessage('ai','Your account is signed in, but the profile is not ready yet. Check that you ran the Supabase SQL setup.');return}renderProfile(data)}
+async function authAction(kind){const email=$('email').value.trim(),password=$('password').value;if(!email||!password){setAuthStatus('Enter your email and password.');return}if(password.length<8){setAuthStatus('Use a password with at least 8 characters.');return}setAuthStatus('Working…',true);let result;if(kind==='signup')result=await supabaseClient.auth.signUp({email,password});else result=await supabaseClient.auth.signInWithPassword({email,password});if(result.error){setAuthStatus(result.error.message);return}if(kind==='signup'&&!result.data.session){setAuthStatus('Account created. Check your email to confirm it, then sign in.',true);return}setAuthStatus('Signed in!',true);await showSignedIn(result.data.session)}
+$('login').addEventListener('click',()=>authAction('login'));$('signup').addEventListener('click',()=>authAction('signup'));
+$('signout').addEventListener('click',async()=>{await supabaseClient.auth.signOut();location.reload()});
+$('chatForm').addEventListener('submit',async e=>{e.preventDefault();const message=$('message').value.trim();if(!message||!currentSession)return; $('message').value='';addMessage('user',message);$('sendBtn').disabled=true;const typing=document.createElement('div');typing.className='typing';typing.textContent='IceAge AI is thinking…';$('chatbody').appendChild(typing);$('chatbody').scrollTop=$('chatbody').scrollHeight;
+ try{const response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentSession.access_token},body:JSON.stringify({message})});const data=await response.json();typing.remove();if(!response.ok){addMessage('ai',data.error||'Something went wrong. Please try again.');if(data.credits_remaining!==undefined){profile.credits_remaining=data.credits_remaining;renderProfile(profile)}return}addMessage('ai',data.reply);profile.credits_remaining=data.credits_remaining;renderProfile(profile)}
+ catch(err){typing.remove();addMessage('ai','I could not reach the server. Check your connection and try again.')}finally{$('sendBtn').disabled=false;$('message').focus()}
+});
+async function start(){try{const cfg=await fetch('/api/config').then(r=>r.json());if(!cfg.supabaseUrl||!cfg.supabaseAnonKey)throw new Error('Supabase settings are missing. Add the Vercel environment variables first.');supabaseClient=window.supabase.createClient(cfg.supabaseUrl,cfg.supabaseAnonKey);const {data}=await supabaseClient.auth.getSession();if(data.session)await showSignedIn(data.session);supabaseClient.auth.onAuthStateChange((_event,session)=>{if(session)showSignedIn(session)})}catch(e){setAuthStatus(e.message)}}
+const stage=$('botstage');document.addEventListener('mousemove',e=>{if(!stage)return;const r=stage.getBoundingClientRect(),bot=stage.querySelector('.bot');const x=((e.clientX-(r.left+r.width/2))/r.width)*8,y=((e.clientY-(r.top+r.height/2))/r.height)*6;bot.style.setProperty('--mx',x+'px');bot.style.setProperty('--my',y+'px')});
+start();
+</script>
+</body></html>
